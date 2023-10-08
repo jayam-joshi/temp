@@ -16,9 +16,9 @@ cccccccccccccccccccccccccccc change the dimension of denity,densityi when system
        itst=0
 c       
        nt=10 ! constant for the system
-       L=25.3033d0 ! system size, change when changing packing fraction
-       ii=25.3033d0
-       jj=25.3033d0
+       L=16.0032d0 ! system size, change when changing packing fraction
+       ii=16.0032d0
+       jj=16.0032d0
        ax=0.0
        ay=0.0
        v=1.0d0
@@ -40,8 +40,8 @@ c
        open(unit=1,file="fnamerhol")
        read(1,*)(name1(i),i=1,900)
 
-       open(unit=38,file="msd_0.2_v1.dat")   ! change packing fraction here
-       open(unit=11,file="dacf_0.2_v1.dat")
+       open(unit=38,file="msd_0.5_v1.dat")   ! change packing fraction here
+       open(unit=11,file="dacf_0.5_v1.dat")
  
 
         pi=2.0*asin(1.0) ! how to define pi
@@ -56,16 +56,16 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         npro2=npro2+1
         iseed = iseed + 2*iens
         ndim=0
-        write(filename_1, '(A,I0,A)') 'msd_0.2_v1_ens', iens, '.dat' ! change packing fraction here
+        write(filename_1, '(A,I0,A)') 'msd_0.5_v1_ens', iens, '.dat' ! change packing fraction here
         open(unit=50+iens, file=trim(filename_1))
         
-        write(filename_2, '(A,I0,A)') 'd_0.2_v1_ens', iens, '.dat'
+        write(filename_2, '(A,I0,A)') 'd_0.5_v1_ens', iens, '.dat'
         open(unit=100+iens, file=trim(filename_2))
  
        do i=1,nint(50*ii)
        do j=1,nint(50*jj)      
 
-       if(ndim<1019) then  ! change no of particles here
+       if(ndim<1019) then    ! change no of particles here
         ndim=ndim+1
         x(ndim,iold)=i*0.02
         y(ndim,iold)=j*0.02
@@ -76,8 +76,6 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         enddo
         
         packfrac=pi*(a00*a00*ndim)/(L*L)
-      
-
 
            do k=1,ndim
            sumx1(k)=0.0d0
@@ -271,4 +269,3 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
        return
        END
-
