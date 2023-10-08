@@ -16,9 +16,9 @@ cccccccccccccccccccccccccccc change the dimension of denity,densityi when system
        itst=0
 c       
        nt=10 ! constant for the system
-       L=16.0d0 ! system size 
-       ii=16.0d0
-       jj=16.0d0
+       L=16.0032d0 ! system size, change when changing packing fraction
+       ii=16.0032d0
+       jj=16.0032d0
        ax=0.0
        ay=0.0
        v=1.0d0
@@ -29,10 +29,10 @@ c
        ntime=5000000 ! total time steps
        nsnap=ntime/99
        am=-100.0! stregth of the repulsion force
-       nens=1
+       nens=3
        inew=2  ! for the particle
        iold=1 ! previous position of the particle
-       iseed=-137581
+       iseed=-137481
         nrr=40
         
        atime1=100
@@ -40,7 +40,7 @@ c
        open(unit=1,file="fnamerhol")
        read(1,*)(name1(i),i=1,900)
 
-       open(unit=38,file="msd_0.5_v1.dat")
+       open(unit=38,file="msd_0.5_v1.dat")   ! change packing fraction here
        open(unit=11,file="dacf_0.5_v1.dat")
  
 
@@ -56,7 +56,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         npro2=npro2+1
         iseed = iseed + 2*iens
         ndim=0
-        write(filename_1, '(A,I0,A)') 'msd_0.5_v1_ens', iens, '.dat'
+        write(filename_1, '(A,I0,A)') 'msd_0.5_v1_ens', iens, '.dat' ! change packing fraction here
         open(unit=50+iens, file=trim(filename_1))
         
         write(filename_2, '(A,I0,A)') 'd_0.5_v1_ens', iens, '.dat'
@@ -65,7 +65,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
        do i=1,nint(50*ii)
        do j=1,nint(50*jj)      
 
-       if(ndim<1019) then
+       if(ndim<1019) then    ! change no of particles here
         ndim=ndim+1
         x(ndim,iold)=i*0.02
         y(ndim,iold)=j*0.02
@@ -75,6 +75,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         enddo
         enddo
         
+        packfrac=pi*(a00*a00*ndim)/(L*L)
 
            do k=1,ndim
            sumx1(k)=0.0d0
@@ -172,11 +173,6 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          write(50+iens,*)itime*dt,avesum2(itime,iens)     ! Storing msd data for each ensemble
          endif
          
-         if(mod(itime,100).eq.0) then
-         write(100+iens,*)itime*dt,density ! Storing density fulctuation for each particle at each time step for each ensemble
-         write(100+iens,*) '----'
-         endif
-
                   
          if(itime.ge.4900000) then
          if(itime.eq.4900000) then
@@ -185,6 +181,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           enddo
          endif
          p_acf(itime,iens) = sum(densityi*density)/dfloat(ndim)  ! density auto-correlation
+         if(mod(itime,50).eq.0) write(100+iens,*)(itime-4900000)*dt, p_acf(itime, iens)   !storing density-correlation with time for each ensemble
          endif
          
            ir=0
@@ -272,18 +269,3 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
        return
        END
-        
-
-       
-
-
-
-
-
-
-       
-
-
-
-
-
