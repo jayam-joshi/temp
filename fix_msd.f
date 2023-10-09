@@ -16,9 +16,9 @@ cccccccccccccccccccccccccccc change the dimension of denity,densityi when system
        itst=0
 c
        nt=10 ! constant for the system
-       L=14.6088d0 ! system size, change when changing packing fraction
-       ii=14.6088d0
-       jj=14.6088d0
+       L=16.0032d0 ! system size, change when changing packing fraction
+       ii=16.0032d0
+       jj=16.0032d0
        ax=0.0
        ay=0.0
        v=1.0d0
@@ -27,9 +27,10 @@ c
        D_R=0.1d0 !stregth of the gaussian white noise
        a00=0.2d0 ! particle radius
        ntime=10000 ! total time steps
+       endtime=8000
        nsnap=ntime/99
        am=-100.0! stregth of the repulsion force
-       nens=3
+       nens=1
        inew=2  ! for the particle
        iold=1 ! previous position of the particle
        iseed=-137481
@@ -40,8 +41,8 @@ c
        open(unit=1,file="fnamerhol")
        read(1,*)(name1(i),i=1,900)
 
-       open(unit=38,file="msd_0.6_v1.dat")   ! change packing fraction here
-       open(unit=11,file="dacf_0.6_v1.dat")
+       open(unit=38,file="msd_0.5_v1.dat")   ! change packing fraction here
+       open(unit=11,file="dacf_0.5_v1.dat")
 
 
         pi=2.0*asin(1.0) ! how to define pi
@@ -56,16 +57,16 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         npro2=npro2+1
         iseed = iseed + 2*iens
         ndim=0
-        write(filename_1, '(A,I0,A)') 'msd_0.6_v1_ens', iens, '.dat' ! change packing fraction here
+        write(filename_1, '(A,I0,A)') 'm_0.5_v1_ens', iens, '.dat' ! change packing fraction here
         open(unit=50+iens, file=trim(filename_1))
 
-        write(filename_2, '(A,I0,A)') 'd_0.6_v1_ens', iens, '.dat'
+        write(filename_2, '(A,I0,A)') 'd_0.5_v1_ens', iens, '.dat'
         open(unit=100+iens, file=trim(filename_2))
 
        do i=1,nint(50*ii)
        do j=1,nint(50*jj)
 
-       if(ndim<1019) then  ! change no of particles here
+       if(ndim<1019) then    ! change no of particles here
         ndim=ndim+1
         x(ndim,iold)=i*0.02
         y(ndim,iold)=j*0.02
@@ -135,16 +136,15 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           b=sqrt(-2*alog(a))*cos(2*pi*c)
 
 
-
           x(k,inew)=x(k,iold)+(v*cos(theta(k,iold))
      1      +sumfx*am)*dt
           y(k,inew)=y(k,iold)+(v*sin(theta(k,iold))
      1       +sumfy*am)*dt
 
           dixx=(v*cos(theta(k,iold))+sumfx*am)*dt
-     1
+
           diyy=(v*sin(theta(k,iold))+sumfy*am)*dt
-     1
+
           theta(k,inew)=theta(k,iold)+
      1       b*(sqrt(2*D_R))*(sqrt(dt))
 
@@ -165,25 +165,24 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           density(k) = ndim1(k)/dfloat(6)           ! local density
           enddo
 
-
          avesum2(itime,iens)=avesum2(itime,iens)/dfloat(ndim)
          density = density - sum(density)/dfloat(ndim)   ! density fluctuation
+
 
          if(mod(itime,50).eq.0) then
          write(50+iens,*)itime*dt,avesum2(itime,iens)     ! Storing msd data for each ensemble
          endif
 
 
-
-         if(itime.ge.8000) then
-         if(itime.eq.8000) then
+         if(itime.ge.(ntime-endtime)) then
+         if(itime.eq.(ntime-endtime)) then
           do k=1,ndim
            densityi(k) = density(k)
           enddo
          endif
-         p_acf(itime,iens) = sum(densityi*density)/dfloat(ndim)  ! density auto-correlation
+         p_acf(itime,iens) = sum(densityi*density)/dfloat(ndim)  ! density autocorrelation
          if(mod(itime,50).eq.0) write(100+iens,*)
-     1       (itime-8000)*dt, p_acf(itime, iens)   !storing density-correlation with time for each ensemble
+     1       (itime-(ntime-endtime))*dt, p_acf(itime, iens)   !storing densitycorrelation with time for each ensemble
          endif
 
            ir=0
@@ -214,6 +213,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 
 
+         
          enddo !time loop ends here
 
          enddo !ensemble loop end here
@@ -227,10 +227,11 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          enddo
          msd3=msd3/dfloat(nens)
          acf_density = acf_density/dfloat(nens)
-         if(mod(itime,50).eq.0) write(38,*)itime*dt,msd3
-         if(itime.ge.8000) then
-         if(mod(itime,50).eq.0) write(11,*)
-     1       (itime-8000)*dt,acf_density
+         print*, msd3
+         if(mod(itime,50).eq.0) write(38,*)itime*dt,msd3  !storing msdt
+         if(itime.ge.(ntime-endtime)) then
+         if(mod(itime,50).eq.0)
+     1       write(11,*)(itime-(ntime-endtime))*dt,acf_density  !storing dcorr
          endif
 
          enddo
@@ -272,4 +273,3 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
        return
        END
-
