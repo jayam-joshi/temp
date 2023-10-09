@@ -5,29 +5,28 @@ c  first code for one dimensional
       dimension x(9000,2),y(9000,2),del(9000),sumx1(9000)
       dimension theta(9000,2),sumy2(9000),density(1019),densityi(1019),
      1 avesum2(6000000,20),p_acf(6000000,20)
-
+     
 cccccccccccccccccccccccccccc change the dimension of denity,densityi when system size is changed!
-
+     
        integer ndim1(9000)
        real a,c,dt,vim,msd3,L,ii,jj,acf_density
        integer inew, iold, iseed
        character(100) :: filename_1, filename_2
-
+ 
        itst=0
-c
+c       
        nt=10 ! constant for the system
        L=19.1274d0 ! system size, change when changing packing fraction
        ii=19.1274d0
        jj=19.1274d0
        ax=0.0
        ay=0.0
-       v=1.0d0
+       v=2.0d0
        n=40
        dt=0.001   ! time step
        D_R=0.1d0 !stregth of the gaussian white noise
        a00=0.2d0 ! particle radius
        ntime=5000000 ! total time steps
-       endtime=100000
        nsnap=ntime/99
        am=-100.0! stregth of the repulsion force
        nens=3
@@ -35,49 +34,48 @@ c
        iold=1 ! previous position of the particle
        iseed=-137481
         nrr=40
-
+        
        atime1=100
 
        open(unit=1,file="fnamerhol")
        read(1,*)(name1(i),i=1,900)
 
-       open(unit=38,file="msd_0.35_v1.dat")   ! change packing fraction here
-       open(unit=11,file="dacf_0.35_v1.dat")
-
+       open(unit=38,file="msd_0.35_v2.dat")   ! change packing fraction here
+       open(unit=11,file="dacf_0.35_v2.dat")
+ 
 
         pi=2.0*asin(1.0) ! how to define pi
 
         npro2=0
         npro=0
         npro1=0
-
+        
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       do iens=1,nens
         npro2=npro2+1
         iseed = iseed + 2*iens
         ndim=0
-        write(filename_1, '(A,I0,A)') 'm_0.35_v1_ens', iens, '.dat' ! change packing fraction here
+        write(filename_1, '(A,I0,A)') 'msd_0.35_v2_ens', iens, '.dat' ! change packing fraction here
         open(unit=50+iens, file=trim(filename_1))
-
-        write(filename_2, '(A,I0,A)') 'd_0.35_v1_ens', iens, '.dat'
+        
+        write(filename_2, '(A,I0,A)') 'd_0.35_v2_ens', iens, '.dat'
         open(unit=100+iens, file=trim(filename_2))
-
+ 
        do i=1,nint(50*ii)
-       do j=1,nint(50*jj)
+       do j=1,nint(50*jj)      
 
-       if(ndim<1019) then   !change no of particles here
+       if(ndim<1019) then
         ndim=ndim+1
         x(ndim,iold)=i*0.02
         y(ndim,iold)=j*0.02
         theta(ndim,iold)=2.0*pi*ran2(iseed)
         endif
-
+        
         enddo
         enddo
-
+        
         packfrac=pi*(a00*a00*ndim)/(L*L)
-
 
 
            do k=1,ndim
@@ -86,21 +84,21 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
            enddo
 
         do itime=1,ntime
-           k1=0
-
+           k1=0 
+           
            do i=1,ndim
            density(i) = 0.0d0
            enddo
 
           avesum2(itime,iens)=0.0d0
           p_acf(itime,iens)=0.0d0
-
+          
           do k=1,ndim
            ndim1(k)=0    ! particles in contact with the particle_ density
            sumfx=0.0d0
            sumfy=0.0d0
            do j=1,ndim
-
+          
            if(j.ne.k) then
             disx=(x(j,iold)-x(k,iold))
             if(abs(disx).ge.0.5*L) disx=L-
@@ -124,19 +122,19 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
            afy=0.0d0
            ndim1(k)=ndim1(k)
            endif
-
+           
            sumfx=sumfx+afx
            sumfy=sumfy+afy
-
+           
            endif
 
           enddo ! here the particle jnekloop end here.
 
-
+          
           a=ran2(iseed)
           c=ran2(iseed)
           b=sqrt(-2*alog(a))*cos(2*pi*c)
-
+           
 
 
           x(k,inew)=x(k,iold)+(v*cos(theta(k,iold))
@@ -145,12 +143,12 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      1       +sumfy*am)*dt
 
           dixx=(v*cos(theta(k,iold))+sumfx*am)*dt
-     1
+     1       
           diyy=(v*sin(theta(k,iold))+sumfy*am)*dt
-     1
+     1          
           theta(k,inew)=theta(k,iold)+
      1       b*(sqrt(2*D_R))*(sqrt(dt))
-
+         
           sumx1(k)=sumx1(k)+dixx
           sumy2(k)=sumy2(k)+diyy
           sum2(k)=(sumx1(k))**2+(sumy2(k))**2
@@ -158,38 +156,37 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           if(theta(k,inew).ge.2*pi) theta(k,inew)=theta(k,inew)-2*pi
           if(theta(k,inew).lt.0.0) theta(k,inew)=theta(k,inew)+2*pi
           if(x(k,inew).le.0.0) x(k,inew)=x(k,inew)+L
-          if(x(k,inew).gt.L) x(k,inew)=x(k,inew)-L ! boundary condition
+          if(x(k,inew).gt.L) x(k,inew)=x(k,inew)-L ! boundary condition 
           if(y(k,inew).le.0.0) y(k,inew)=y(k,inew)+L
           if(y(k,inew).gt.L) y(k,inew)=y(k,inew)-L
 
-
-          avesum2(itime,iens)=avesum2(itime,iens)+sum2(k)
-
+                            
+          avesum2(itime,iens)=avesum2(itime,iens)+sum2(k) 
+                   
           density(k) = ndim1(k)/dfloat(6)           ! local density
           enddo
-
-
+          
+         
          avesum2(itime,iens)=avesum2(itime,iens)/dfloat(ndim)
          density = density - sum(density)/dfloat(ndim)   ! density fluctuation
-
+         
          if(mod(itime,50).eq.0) then
          write(50+iens,*)itime*dt,avesum2(itime,iens)     ! Storing msd data for each ensemble
          endif
-
-
-         if(itime.ge.(ntime-endtime)) then
-         if(itime.eq.(ntime-endtime)) then
+         
+                  
+         if(itime.ge.4900000) then
+         if(itime.eq.4900000) then
           do k=1,ndim
            densityi(k) = density(k)
           enddo
          endif
          p_acf(itime,iens) = sum(densityi*density)/dfloat(ndim)  ! density auto-correlation
-         if(mod(itime,50).eq.0) write(100+iens,*)
-     1       (itime-(ntime-endtime))*dt, p_acf(itime, iens)   !storing density-correlation with time for each ensemble
+         if(mod(itime,50).eq.0) write(100+iens,*)(itime-4900000)*dt, p_acf(itime, iens)   !storing density-correlation with time for each ensemble
          endif
-
+         
            ir=0
-           if(iens.eq.1) then
+           if(iens.eq.1) then 
            do ip=1,(ntime-itst)/nsnap
            mtime=itst+ip*nsnap
 
@@ -197,29 +194,29 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
            if(itime.eq.mtime) then
 
             npro=npro+1
-
+            
             open(unit=31,file=name1(npro))
 
             do k=1,ndim
-
+              
             write(31,*)x(k,inew),y(k,inew),a00
 
             enddo
 
            endif
-
+           
            enddo
            endif
         itemp=iold
         iold=inew
         inew=itemp
-
-
-
+           
+     
+      
          enddo !time loop ends here
-
+          
          enddo !ensemble loop end here
-
+        
          msd3=0.0
          do itime=1,ntime
          acf_density=0.0d0
@@ -230,11 +227,10 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          msd3=msd3/dfloat(nens)
          acf_density = acf_density/dfloat(nens)
          if(mod(itime,50).eq.0) write(38,*)itime*dt,msd3
-         if(itime.ge.(ntime-endtime)) then
-         if(mod(itime,50).eq.0)
-     1       write(11,*)(itime-(ntime-endtime))*dt,acf_density
+         if(itime.ge.4900000) then
+         if(mod(itime,50).eq.0) write(11,*)(itime-4900000)*dt,acf_density
          endif
-
+         
          enddo
 
           stop
@@ -274,4 +270,3 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
        return
        END
-
